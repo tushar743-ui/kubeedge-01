@@ -87,8 +87,9 @@ func TestFileCopy(t *testing.T) {
 		}()
 		assert.NoError(t, src.Close())
 
-		// Use a non-existent directory as destination to force OpenFile error
-		dst := filepath.Join("/nonexistent/directory", "b.txt")
+		// Use a guaranteed-nonexistent directory under TempDir to force OpenFile error
+		tempDir := t.TempDir()
+		dst := filepath.Join(tempDir, "does-not-exist", "b.txt")
 		err = FileCopy(src.Name(), dst)
 		assert.ErrorContains(t, err, "failed to open or create destination file")
 	})
@@ -145,7 +146,9 @@ func TestGetSubDirs(t *testing.T) {
 	})
 
 	t.Run("invalid directory", func(t *testing.T) {
-		dirs, err := GetSubDirs("/nonexistent/directory", false)
+		tmpDir := t.TempDir()
+		nonexistentDir := filepath.Join(tmpDir, "nonexistent")
+		dirs, err := GetSubDirs(nonexistentDir, false)
 		assert.Error(t, err)
 		assert.ErrorContains(t, err, "failed to read directory")
 		assert.Nil(t, dirs)
